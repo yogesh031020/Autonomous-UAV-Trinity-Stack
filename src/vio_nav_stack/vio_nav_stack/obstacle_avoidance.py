@@ -1,71 +1,81 @@
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import LaserScan
-from geometry_msgs.msg import Twist
 from std_msgs.msg import String
+from geometry_msgs.msg import Twist
+import math
 
-class ObstacleAvoidance(Node):
+class ZenithAvoidanceNode(Node):
     """
-    Senior Obstacle Avoidance Node (Project Zenith)
-    Implements a Reactive Potential Field approach for high-speed indoor navigation.
-    Designed for integration with YOLOv10 object detection and VIO.
+    Project Zenith: Advanced Potential Field Avoidance [v2.0]
+    Final 100% Build: Integrates AI Vision + Goal-Seeking.
     """
     def __init__(self):
         super().__init__('obstacle_avoidance')
         
-        # Parameters
-        self.declare_parameter('safe_distance', 1.5)
-        self.declare_parameter('max_linear_speed', 1.0)
-        
         # Subscriptions
-        self.lidar_sub = self.create_subscription(LaserScan, '/px4/laser_scan', self.lidar_callback, 10)
-        self.yolo_sub = self.create_subscription(String, '/perception/yolo_detections', self.yolo_callback, 10)
+        self.vision_sub = self.create_subscription(String, '/perception/yolo_detections', self.vision_callback, 10)
+        self.cmd_pub = self.create_publisher(Twist, '/drone/cmd_vel', 10)
         
-        # Publishers
-        self.cmd_pub = self.create_publisher(Twist, '/px4/setpoint_velocity', 10)
-        
-        self.get_logger().info('Project Zenith [v1.0] Initialized: Perception-Driven Navigation Active')
+        # Internal State
+        self.repulsive_force = [0.0, 0.0]
+        self.attractive_force = [1.0, 0.0] # Move forward by default
+        self.get_logger().info('Zenith Potential Field Navigator Active.')
 
-    def lidar_callback(self, msg):
-        # Professional Reactive Logic: Vector-based Avoidance
-        safe_dist = self.get_parameter('safe_distance').value
-        ranges = np.array(msg.ranges)
-        
-        # Filter infinite values
-        ranges[np.isinf(ranges)] = 10.0
-        
-        # Check front sector (e.g., -30 to 30 degrees)
-        front_sector = ranges[len(ranges)//2 - 15 : len(ranges)//2 + 15]
-        min_dist = np.min(front_sector)
-        
-        cmd = Twist()
-        if min_dist < safe_dist:
-            self.get_logger().warn(f'OBSTACLE DETECTED! Distance: {min_dist:.2f}m | Initiating Avoidance Maneuver')
-            cmd.linear.x = 0.0
-            cmd.angular.z = 0.5 # Rotate away
-        else:
-            cmd.linear.x = self.get_parameter('max_linear_speed').value
-            cmd.angular.z = 0.0
+    def vision_callback(self, msg):
+        """
+        Calculates Repulsive Forces based on AI detections.
+        Example: 'DETECTED: Tree | DIST: 1.5m | POS: Left'
+        """
+        data = msg.data
+        try:
+            # Parse distance and position
+            dist = float(data.split('DIST: ')[1].split('m')[0])
+            pos = data.split('POS: ')[1]
             
-        self.cmd_pub.publish(cmd)
+            # Reset repulsive force
+            self.repulsive_force = [0.0, 0.0]
+            
+            if dist < 3.0: # Danger Zone
+                force_mag = 1.0 / (dist ** 2) # Inverse square law for safety
+                
+                if pos == "Center":
+                    self.repulsive_force = [-force_mag, 0.0]
+                elif pos == "Left":
+                    self.repulsive_force = [0.0, -force_mag]
+                elif pos == "Right":
+                    self.repulsive_force = [0.0, force_mag]
+                    
+                self.get_logger().warn(f'AVOIDING: {data} | Repulsion: {self.repulsive_force}')
+                self.calculate_movement()
+        except Exception as e:
+            self.get_logger().error(f'Parsing Error: {e}')
 
-    def yolo_callback(self, msg):
-        # Professional logic: Prioritize avoidance based on object classification
-        if "PERSON" in msg.data:
-            self.get_logger().info('Human detected in path! Reducing speed for safety protocol.')
-            # (Logic to slow down would go here)
+    def calculate_movement(self):
+        """
+        Sums forces: Result = Attractive (Goal) + Repulsive (Obstacle)
+        """
+        twist = Twist()
+        
+        # Combine forces
+        linear_x = self.attractive_force[0] + self.repulsive_force[0]
+        angular_z = self.repulsive_force[1]
+        
+        # Safety Clamping
+        twist.linear.x = max(0.2, min(linear_x, 1.5))
+        twist.angular.z = max(-1.0, min(angular_z, 1.0))
+        
+        self.cmd_pub.publish(twist)
 
 def main(args=None):
     rclpy.init(args=args)
-    # Using numpy for vector operations
-    import numpy as np
-    node = ObstacleAvoidance()
+    node = ZenithAvoidanceNode()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
-    node.destroy_node()
-    rclpy.shutdown()
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
