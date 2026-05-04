@@ -1,0 +1,15 @@
+services:
+  aegis-env:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aegis_container
+    volumes:
+      - .:/home/yogesh/project_aegis
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+    network_mode: host
+    privileged: true
+    tty: true
+    stdin_open: true

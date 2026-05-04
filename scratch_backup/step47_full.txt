@@ -1,0 +1,12 @@
+﻿To build a **3-5 year Senior Engineer portfolio**, I suggest you build these **three specific projects.** Each one is designed to prove a different "Senior" skill set: **Safety, Scalability, and Optimization.**
+
+---
+
+### Project 1: "AEGIS" â€” The Failure-Resilient Autonomy Stack
+**The Pitch:** "A drone that refuses to crash."
+*   **The Project:** An autonomous indoor inspection drone (in Gazebo Harmonic) that uses **Behavior Trees** to manage complex missions.
+*   **The "Senior" Features:**
+    *   **Fault Injection Testing:** A system that randomly "kills" the LiDAR or adds noise to the IMU to test the drone's recovery logic.
+    *   **Health Monitor Node:** A custom C++ node that monitors EKF (Extended Kalman Filter) health and triggers an "Emergency Land" if the position estimate becomes unreliable.
+    *   **Dynamic Re-planning:** If a path is blocked, the drone doesn't just stop; it uses **Nav2** to calculate an alternative route in real-time.
+<truncated 2227 bytes>

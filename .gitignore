@@ -1,0 +1,25 @@
+# Build and Install folders
+build/
+install/
+log/
+**/__pycache__/
+
+# Large Simulation / Data Files
+*.db
+*.sqlite
+logs/*.db
+logs/*.sqlite
+
+# External Repositories (Should be cloned via Dockerfile)
+PX4-Autopilot/
+Micro-XRCE-DDS-Agent/
+
+# OS and IDE files
+.DS_Store
+.vscode/
+.idea/
+
+# Environment
+.env
+venv/
+*.pyc
