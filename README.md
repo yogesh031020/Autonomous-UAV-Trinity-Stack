@@ -4,7 +4,7 @@
 [![Gazebo](https://img.shields.io/badge/Gazebo-Harmonic-orange)](https://gazebosim.org/home)
 [![Level](https://img.shields.io/badge/Engineering-Senior-red)](https://github.com/)
 
-A comprehensive, production-grade autonomous drone ecosystem. This repository integrates three core pillars of modern robotics: **Failure Resilience**, **Multi-Agent Coordination**, and **AI-Driven Perception.**
+A comprehensive, production-grade autonomous drone ecosystem. This repository integrates four core pillars of modern robotics: **Failure Resilience**, **Multi-Agent Coordination**, **AI-Driven Perception**, and **Industrial Inspection.**
 
 ## 🌌 The Trinity Architecture
 
@@ -14,6 +14,11 @@ graph TD
         VIO[Vision-Inertial Odometry]
         YOLO[AI Object Detection]
         OA[Obstacle Avoidance]
+    end
+
+    subgraph "Project 4: CHRONOS (Infrastructure)"
+        SLAM[SLAM Toolbox]
+        DL[Defect Detection]
     end
 
     subgraph "Project 2: Swarm Coordination (Distributed)"
