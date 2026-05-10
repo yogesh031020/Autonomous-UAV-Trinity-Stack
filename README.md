@@ -6,12 +6,6 @@
 
 A comprehensive, production-grade autonomous drone ecosystem. This repository integrates three core pillars of modern robotics: **Failure Resilience**, **Multi-Agent Coordination**, and **AI-Driven Perception.**
 
-## 🏗️ System Architecture
-![Architecture](docs/architecture.png)
-
-## 🎥 Demo Preview
-![Demo Preview](docs/demo_preview.png)
-*(Full system running in Gazebo Harmonic)*
 
 ## 🌌 The Trinity Pillars
 This repository integrates three core pillars of modern robotics: **Failure Resilience**, **Multi-Agent Coordination**, and **AI-Driven Perception.**
