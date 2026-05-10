@@ -6,35 +6,15 @@
 
 A comprehensive, production-grade autonomous drone ecosystem. This repository integrates three core pillars of modern robotics: **Failure Resilience**, **Multi-Agent Coordination**, and **AI-Driven Perception.**
 
-## 🌌 The Trinity Architecture
+## 🏗️ System Architecture
+![Architecture](docs/architecture.png)
 
-```mermaid
-graph TD
-    subgraph "Project 3: Zenith (Perception)"
-        VIO[Vision-Inertial Odometry]
-        YOLO[AI Object Detection]
-        OA[Obstacle Avoidance]
-    end
+## 🎥 Demo Preview
+![Demo Preview](docs/demo_preview.png)
+*(Full system running in Gazebo Harmonic)*
 
-    subgraph "Project 2: Swarm Coordination (Distributed)"
-        D1[Drone 1 Namespace]
-        D2[Drone 2 Namespace]
-        MM[Map Merger Node]
-        D1 --> MM
-        D2 --> MM
-    end
-
-    subgraph "Project 1: AEGIS (Safety)"
-        GN[Guardian Node]
-        BBL[Black Box Logger]
-        SQLite[(SQLite DB)]
-    end
-
-    %% Integrated Flow
-    YOLO --> OA
-    OA --> GN
-    MM --> GroundStation[Unified Mission Control]
-```
+## 🌌 The Trinity Pillars
+This repository integrates three core pillars of modern robotics: **Failure Resilience**, **Multi-Agent Coordination**, and **AI-Driven Perception.**
 
 ## 🛠️ Flagship Projects
 
