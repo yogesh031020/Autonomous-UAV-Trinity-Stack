@@ -18,7 +18,7 @@ class OffboardControl(Node):
         # 1. Setup Industrial QoS Profiles (Crucial for PX4)
         qos_profile = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
             history=HistoryPolicy.KEEP_LAST,
             depth=1
         )
@@ -38,8 +38,8 @@ class OffboardControl(Node):
         self.emergency_mode = False
         self.offboard_setpoint_counter = 0
 
-        # 6. Offboard Heartbeat Timer (20Hz - PX4 requires >2Hz)
-        self.timer = self.create_timer(0.05, self.timer_callback)
+        # 6. Offboard Heartbeat Timer (50Hz - Compensates for screen recorder CPU throttling)
+        self.timer = self.create_timer(0.02, self.timer_callback)
         
         self.get_logger().info('VANGUARD Offboard Controller Initialized. Waiting for FMU Link...')
 
@@ -73,10 +73,13 @@ class OffboardControl(Node):
                 self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, param1=1.0, param2=21196.0)
                 self.get_logger().info("FMU Link Active: Switching to OFFBOARD Flight Mode & Force-Arming Motors...")
 
-        # 3. Publish position target if not in emergency mode
+        # 3. Publish position target
         if not self.emergency_mode:
             # Fly to 5 meters altitude directly above home
             self.publish_trajectory_setpoint(0.0, 0.0, -5.0)
+        else:
+            # EMERGENCY: Force PX4 to enter AUTO.LAND mode
+            self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_DO_SET_MODE, param1=1.0, param2=4.0, param3=4.0)
         
     def publish_offboard_control_mode(self):
         msg = OffboardControlMode()
@@ -91,7 +94,10 @@ class OffboardControl(Node):
     def publish_trajectory_setpoint(self, x, y, z):
         msg = TrajectorySetpoint()
         msg.position = [x, y, z]
-        msg.yaw = 0.0
+        msg.velocity = [float('nan'), float('nan'), float('nan')]
+        msg.acceleration = [float('nan'), float('nan'), float('nan')]
+        msg.yaw = -3.14  # Face south (arbitrary heading)
+        msg.yawspeed = float('nan')
         msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
         self.trajectory_pub.publish(msg)
 
