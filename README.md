@@ -18,6 +18,22 @@ To validate the VANGUARD fail-safe autonomy, we run a high-fidelity **Software-i
 | ![Takeoff](docs/gazebo_x500_takeoff.png) | ![Landing](docs/gazebo_x500_hover.png) |
 | *Node switches PX4 to OFFBOARD mode, arms the motors, and commands a stable 5m hover.* | *Simulated battery failure triggers the safety state machine, commanding an immediate Return-to-Launch.* |
 
+## 🧠 Systems Engineering: Challenges & Solutions
+Developing an end-to-end hardware-in-the-loop simulation requires solving deep integration issues between ROS 2, Micro-XRCE-DDS, and PX4. Here are the core challenges resolved in this architecture:
+
+1. **DDS QoS Profile Mismatch (The Silent Drop):** 
+   - **Challenge:** The drone armed but refused to climb. The ROS 2 publisher was set to `TRANSIENT_LOCAL` durability, while the PX4 Micro-XRCE-DDS subscriber strictly expected `VOLATILE`. The middleware silently dropped all trajectory setpoints.
+   - **Solution:** Analyzed the DDS middleware handshake and aligned the ROS 2 QoS profile to match PX4's `VOLATILE` expectations, successfully restoring the high-frequency offboard control link.
+2. **CPU Throttling & Offboard Timeout:** 
+   - **Challenge:** When screen recording software was activated, CPU spikes starved the ROS 2 node. The setpoint publish rate dropped below PX4's strict 2Hz safety cutoff, causing the drone to instantly abort flight.
+   - **Solution:** Optimized the offboard control loop timer from 20Hz up to 50Hz, creating enough latency buffer to survive severe CPU throttling without triggering the autopilot's offboard loss failsafe.
+3. **Failsafe RTL Mode Rejection:** 
+   - **Challenge:** Because internal pre-flight safety checks were bypassed for SITL testing, PX4 ignored standard failsafe fallback modes when a battery emergency was injected.
+   - **Solution:** Engineered the ROS 2 safety node to explicitly inject the MAVLink `VEHICLE_CMD_DO_SET_MODE` for `AUTO.LAND`, forcing PX4 to hand over control and land gracefully without relying on internal fallbacks.
+4. **WSL2 Cross-Drive Compilation Bottlenecks:** 
+   - **Challenge:** Compiling ROS 2 interfaces (`px4_msgs`) on a mounted Windows drive from WSL took over 70 minutes due to cross-OS filesystem translation overhead.
+   - **Solution:** Re-cloned and compiled `px4_msgs` natively inside the WSL Linux filesystem (`~/px4_ws`), cutting compile time down to just 2 seconds using underlay workspace sourcing.
+
 ## 🌌 The Trinity Pillars
 This repository integrates three core pillars of modern robotics: **Failure Resilience**, **Multi-Agent Coordination**, and **AI-Driven Perception.**
 
