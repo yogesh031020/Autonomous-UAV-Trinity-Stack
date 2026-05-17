@@ -9,9 +9,14 @@ A comprehensive, production-grade autonomous drone ecosystem. This repository in
 ## 🏗️ System Architecture
 ![Architecture](docs/architecture.png)
 
-## 🎥 Demo Preview
-![Demo Preview](docs/demo_preview.png)
-*(Full system running in Gazebo Harmonic)*
+## 🎥 Real-Time Flight & Failsafe Simulation (Gazebo Harmonic)
+
+To validate the VANGUARD fail-safe autonomy, we run a high-fidelity **Software-in-the-Loop (SITL)** simulation using **PX4 Autopilot** and the cutting-edge **Gazebo Harmonic (GZ Sim)**. The ROS 2 Brain controls the drone dynamically via offboard setpoints over a high-speed **Micro-XRCE-DDS** bridge.
+
+| 🛫 Autonomous Takeoff (5m Position Target) | 🛬 Emergency RTL Landing (Triggered by Failsafe) |
+|:---:|:---:|
+| ![Takeoff](docs/gazebo_x500_takeoff.png) | ![Landing](docs/gazebo_x500_hover.png) |
+| *Node switches PX4 to OFFBOARD mode, arms the motors, and commands a stable 5m hover.* | *Simulated battery failure triggers the safety state machine, commanding an immediate Return-to-Launch.* |
 
 ## 🌌 The Trinity Pillars
 This repository integrates three core pillars of modern robotics: **Failure Resilience**, **Multi-Agent Coordination**, and **AI-Driven Perception.**
