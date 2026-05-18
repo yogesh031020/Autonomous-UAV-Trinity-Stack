@@ -13,10 +13,22 @@ A comprehensive, production-grade autonomous drone ecosystem. This repository in
 
 To validate the VANGUARD fail-safe autonomy, we run a high-fidelity **Software-in-the-Loop (SITL)** simulation using **PX4 Autopilot** and the cutting-edge **Gazebo Harmonic (GZ Sim)**. The ROS 2 Brain controls the drone dynamically via offboard setpoints over a high-speed **Micro-XRCE-DDS** bridge.
 
-| 🛫 Autonomous Takeoff (5m Position Target) | 🛬 Emergency RTL Landing (Triggered by Failsafe) |
-|:---:|:---:|
-| ![Takeoff](docs/gazebo_x500_takeoff.png) | ![Landing](docs/gazebo_x500_hover.png) |
-| *Node switches PX4 to OFFBOARD mode, arms the motors, and commands a stable 5m hover.* | *Simulated battery failure triggers the safety state machine, commanding an immediate Return-to-Launch.* |
+<p align="center">
+  <table border="0">
+    <tr>
+      <td align="center" width="50%">
+        <b>🛫 Autonomous Takeoff (5m Position Target)</b><br><br>
+        <video src="docs/vanguard_takeoff_hover_demo.mp4" width="100%" autoplay loop muted playsinline></video>
+        <p><i>Node switches PX4 to OFFBOARD mode, arms motors, and commands a stable 5m hover.</i></p>
+      </td>
+      <td align="center" width="50%">
+        <b>🛬 Emergency RTL Landing (Triggered by Failsafe)</b><br><br>
+        <video src="docs/vanguard_failsafe_landing_demo.mp4" width="100%" autoplay loop muted playsinline></video>
+        <p><i>Simulated battery failure triggers safety state machine, commanding immediate Return-to-Launch.</i></p>
+      </td>
+    </tr>
+  </table>
+</p>
 
 ## 🧠 Systems Engineering: Challenges & Solutions
 Developing an end-to-end hardware-in-the-loop simulation requires solving deep integration issues between ROS 2, Micro-XRCE-DDS, and PX4. Here are the core challenges resolved in this architecture:
@@ -61,6 +73,45 @@ docker-compose up -d
 
 # Launch the Full Trinity Stack
 ros2 launch swarm_coordinator swarm_launch.py
+```
+
+## 📂 Repository Directory Layout
+
+```directory
+-Autonomous-UAV-Trinity-Stack/
+├── Dockerfile                             # Unified multi-stage container build spec
+├── docker-compose.yml                     # Chaos-simulation local orchestration config
+├── docs/
+│   ├── architecture.png                   # High-level DDS system architecture flow
+│   ├── vanguard_takeoff_hover_demo.mp4    # Takeoff offboard simulation flight video
+│   └── vanguard_failsafe_landing_demo.mp4 # Battery failsafe emergency RTL flight video
+├── src/
+│   ├── guardian_system/                   # Fail-safe monitoring logic package
+│   │   ├── guardian_system/
+│   │   │   ├── black_box_logger.py        # High-frequency flight event logger
+│   │   │   ├── guardian_node.py           # Heartbeat diagnostic supervisor state machine
+│   │   │   └── offboard_control.py        # High-frequency PX4/DDS offboard setpoint link
+│   │   └── package.xml
+│   ├── swarm_coordinator/                 # Multi-agent coordination package
+│   │   ├── launch/
+│   │   │   └── swarm_launch.py            # Isolated namespace simulation launcher
+│   │   ├── swarm_coordinator/
+│   │   │   ├── map_merger.py              # P2P map & spatial grid merging node
+│   │   │   └── swarm_coordinator.py       # Distributed mission sequencing node
+│   │   └── package.xml
+│   ├── vanguard_interfaces/               # Custom ROS 2 msg interface definitions
+│   │   ├── msg/
+│   │   │   ├── FailsafeAction.msg         # Custom emergency action message definition
+│   │   │   └── HealthStatus.msg           # Custom multi-state telemetry message definition
+│   │   └── CMakeLists.txt
+│   └── vio_nav_stack/                     # AI Perception & VIO navigation stack
+│       ├── vio_nav_stack/
+│       │   ├── obstacle_avoidance.py      # APF reactive obstacle evasion logic
+│       │   └── perception_simulator.py    # YOLO object detector perception simulator
+│       └── package.xml
+├── zenoh_config.json5                     # DDS router config for Zenoh overlay
+├── LICENSE                                # MIT License
+└── README.md                              # Main portfolio presentation guide
 ```
 
 ---
